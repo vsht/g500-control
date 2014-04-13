@@ -39,28 +39,22 @@
  * sends it to the mouse sets the leds and the resolution
  */
 
+#define _POSIX_C_SOURCE 199309L
+
+#ifndef G500_CONTROL_C
+#define G500_CONTROL_C
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
 #include <sys/ioctl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <asm/types.h>
-#include <fcntl.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <linux/hiddev.h>
+#include "g500-control.h"
 
-#define VERSION "0.0.1"
 
-#define VENDOR 0x046d
-
-//means that we are not interested what G500 replies to the information recieved
-//for debugging purposes change this to 1
-#define DEBUG_INFOS 0
-
-/* G500's signature*/
-#define MOUSE_G500 0xc068
 
 /*modified send_report since G500 also uses a 20 byte long buffer*/
 static int send_report20(int fd, const unsigned char *buf, size_t size) {
@@ -119,7 +113,12 @@ static int send_report(int fd, const unsigned char *buf, size_t size) {
   return err;
 }
 
-void send_msg(int fd,char c0,char c1,char c2, char c3, char c4, char c5)
+void send_msg(int fd, const unsigned char c0,
+                      const unsigned char c1,
+                      const unsigned char c2,
+                      const unsigned char c3,
+                      const unsigned char c4,
+                      const unsigned char c5)
 {
   unsigned char b[6];
   b[0]=c0;
@@ -136,7 +135,25 @@ void send_msg(int fd,char c0,char c1,char c2, char c3, char c4, char c5)
   }
 }
 /*modified send_msg since G500 also uses a 20 byte long buffer*/
-void send_msg20(int fd,char c0,char c1,char c2, char c3, char c4, char c5, char c6, char c7, char c8, char c9, char c10, char c11, char c12, char c13, char c14 , char c15 , char c16 , char c17, char c18 )
+void send_msg20(int fd, const unsigned char c0,
+                        const unsigned char c1,
+                        const unsigned char c2,
+                        const unsigned char c3,
+                        const unsigned char c4,
+                        const unsigned char c5,
+                        const unsigned char c6,
+                        const unsigned char c7,
+                        const unsigned char c8,
+                        const unsigned char c9,
+                        const unsigned char c10,
+                        const unsigned char c11,
+                        const unsigned char c12,
+                        const unsigned char c13,
+                        const unsigned char c14,
+                        const unsigned char c15,
+                        const unsigned char c16,
+                        const unsigned char c17,
+                        const unsigned char c18 )
 {
   unsigned char b[19];
   b[0]=c0;
@@ -215,10 +232,10 @@ void hid_reply(int fd) {
     printf("\n");
 }
 
-void g500_reply (int fd, int debug_infos) {
-// g500_reply(0) simply gives the mouse enough time to proceed the recieved information
-// g500_reply(1) displays G500's reply to the recieved information
- struct timespec req = {0};
+void g500_reply (int fd, const int debug_infos) {
+/* g500_reply(0) simply gives the mouse enough time to proceed the recieved information
+   g500_reply(1) displays G500's reply to the recieved information */
+ struct timespec req = {0,0};
  req.tv_sec = 0;
  req.tv_nsec = 100000000L;
  nanosleep(&req, (struct timespec *)NULL);
@@ -227,7 +244,7 @@ void g500_reply (int fd, int debug_infos) {
 
 }
 
-int dpi_convert (int dpi_value) {
+int dpi_convert (const int dpi_value) {
   int dpi_hex=0;
   if ((dpi_value!=0) && (200 <=dpi_value) && (dpi_value <= 5700) && (dpi_value % 100 == 0) ) {
     int rest = dpi_value % 400;
@@ -379,18 +396,18 @@ int main (int argc, char **argv) {
   int version;
   struct hiddev_devinfo device_info;
 
-  int  urr=0x02;
-  int  as=0x01;
-  int  dpi_1_x=0;
-  int  dpi_1_y=0;
-  int  dpi_2_x=0;
-  int  dpi_2_y=0;
-  int  dpi_3_x=0;
-  int  dpi_3_y=0;
-  int  dpi_4_x=0;
-  int  dpi_4_y=0;
-  int  dpi_5_x=0;
-  int  dpi_5_y=0;
+  int urr=0x02;
+  int as=0x01;
+  int dpi_1_x=0;
+  int dpi_1_y=0;
+  int dpi_2_x=0;
+  int dpi_2_y=0;
+  int dpi_3_x=0;
+  int dpi_3_y=0;
+  int dpi_4_x=0;
+  int dpi_4_y=0;
+  int dpi_5_x=0;
+  int dpi_5_y=0;
   int dpi_btn_1=0;
   int dpi_btn_2=0;
   int dpi_btn_3=0;
@@ -413,7 +430,7 @@ int main (int argc, char **argv) {
 
 
   printf("\n");
-  printf("%c[%d;%d;%dmWARNING! HIGHLY EXPERIMENTAL! ", 0x1B, 1,31,40);
+  printf("%c[%d;%d;%dmWARNING!", 0x1B, 1,31,40);
   printf("THIS MAY POTENTIALLY BRICK YOUR LOGITECH G500 MOUSE,\n");
   printf("SO USE IT ON YOUR OWN RISK! NO LIABILITY FOR ANY DIRECT OR INDIRECT DAMAGE CAUSED\n");
   printf("BY USING THIS PROGRAM IS ACCEPTED!\n");
@@ -465,7 +482,7 @@ int main (int argc, char **argv) {
       exit(1);
     }
 
-  // Checking the input parameters and setting the appropriate registers
+  /* Checking the input parameters and setting the appropriate registers */
 
     if ((strcmp(argv[2],"--125") == 0) || (strcmp(argv[2],"--200") == 0) || (strcmp(argv[2],"--250") == 0) ||
     (strcmp(argv[2],"--333") == 0) || (strcmp(argv[2],"--500") == 0) || (strcmp(argv[2],"--1000") == 0) ||
@@ -763,10 +780,10 @@ int main (int argc, char **argv) {
   }
 
   printf("Sending the initialization sequence ... ");
-  // This is the initialization sequence SetPoint sends to a G500 when you plug it into USB port.
-  // You can't flash a profile without sending this first.
-  // I'm not sure whether this sequence is universal for all G500's or differs from mouse to mouse. This
-  // is what I get with SetPoint 6.20 and my G500 (P/N 810-001240, M/N M-U0010)
+  /* This is the initialization sequence SetPoint sends to a G500 when you plug it into USB port.
+     You can't flash a profile without sending this first.
+     I'm not sure whether this sequence is universal for all G500's or differs from mouse to mouse. This
+     is what I get with SetPoint 6.20 and my G500 (P/N 810-001240, M/N M-U0010) */
   send_msg(fd,0x00,0x80,0xa1,0x01,0x00,0x02);
   g500_reply(fd,DEBUG_INFOS);
   send_msg(fd,0x00,0x83,0xa2,0x01,0x80,0x00);
@@ -804,10 +821,10 @@ int main (int argc, char **argv) {
   g500_reply(fd,DEBUG_INFOS);
   printf("done!\n");
 
-  //This is the actual profile
+  /* This is the actual profile */
   printf("Flashing new profile ... ");
 
-  // 1st part of the profile
+  /* 1st part of the profile */
   send_msg20(fd,0x00,0x82,0xa0,0x02,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x00,0x00,0x01,0x00,0x00,0x00,0x00,0x00);
   g500_reply(fd,DEBUG_INFOS);
   send_msg20(fd,0x00,0x90,0x06,0x01,0x02,0x00,0x00,0x00,0x00,0x4e,0x00,0x00,0xff,0x00,0x00,0x80,0x00,dpi_1_x,0x00);
@@ -822,7 +839,7 @@ int main (int argc, char **argv) {
   send_msg(fd,0x00,0x83,0x63,0x00,0x00,0x00);
   g500_reply(fd,DEBUG_INFOS);
   send_msg(fd,0x00,0x80,0x0f,0x00,0x00,0x00);
-  // 2nd part of the profile
+  /* 2nd part of the profile */
   g500_reply(fd,DEBUG_INFOS);
   send_msg20(fd,0x00,0x90,0x0d,0x01,0x00,0x00,0x00,0x00,0x00,0x4e,0x00,0x00,0xff,0x00,0x00,0x80,0x00,dpi_1_x,0x00);
   send_msg20(fd,0x00,0x91,0x0e,dpi_1_y,0x22,0x11,0x00,dpi_2_x,0x00,dpi_2_y,md_1,md_2,0x00,dpi_3_x,0x00,dpi_3_y,md_3,md_4,0x00);
@@ -839,3 +856,5 @@ int main (int argc, char **argv) {
   close(fd);
   exit(0);
 }
+
+#endif /* G500_CONTROL */
