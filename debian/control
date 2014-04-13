@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Vladyslav Shtabovenko <DFEW.Entwickler@googlemail.com>
 Build-Depends: debhelper (>= 9), gcc (>=4.6)
 Standards-Version: 3.9.4
-Homepage: http://code.google.com/p/g500-control/
+Homepage: https://github.com/vsht/g500-control
 
 Package: g500-control
 Architecture: any
@@ -16,4 +16,4 @@ Description: Tweak Logitech G500 gaming mouse under Linux
  gaming mouse, e.g. dpi resolution, USB report rate or angle snapping
  without the need to boot Windows and run the SetPoint software.
  The settings are flashed directly into the G500's internal profile.
-Homepage: http://code.google.com/p/g500-control/
+Homepage: https://github.com/vsht/g500-control
